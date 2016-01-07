@@ -11,7 +11,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * createdTime 2016/1/6
+ * 获取gid线程
+ * 1.首先去对应的斗鱼房间抓取页面，取到server_config的字符串
+ * 2.进行URL解码,得到一组ip, port
+ * 3.向其中任意的一个ip,port发送loginreq包
  *
  * @author ndrlslz
  */

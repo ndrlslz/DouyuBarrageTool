@@ -24,9 +24,6 @@ public class BarrageThread implements Runnable {
     private OutputStream outputStream;
     private boolean close;
 
-    /**
-     * 因为暂时取不到gid,所以手动传入gid.
-     */
     public BarrageThread() throws IOException {
         socket = new Socket(Config.getAddress(), Integer.parseInt(Config.getPort()));
         inputStream = socket.getInputStream();
