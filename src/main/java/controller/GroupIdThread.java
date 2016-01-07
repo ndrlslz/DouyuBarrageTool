@@ -1,6 +1,5 @@
 package controller;
 
-import domain.ServerConfig;
 import service.RoomInformation;
 import service.SendMessage;
 
@@ -58,7 +57,6 @@ public class GroupIdThread implements Runnable {
             Matcher matcher = pattern.matcher(new String(bytes, 0, i));
 
             if (matcher.find()) {
-                new RoomInformation().get(matcher.group(1));
                 roomInformation.setGid(matcher.group(1));
                 break;
             }

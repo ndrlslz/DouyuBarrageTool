@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  * @author ndrlslz
  */
 public class RoomInformation {
-    private HttpClient httpClient = new HttpClient();
+    private static HttpClient httpClient = new HttpClient();
     private String html;
     private String gid;
 
@@ -37,10 +37,6 @@ public class RoomInformation {
 
     }
 
-    public String get(String groupId) {
-        return groupId;
-    }
-
     public String getGroupId() throws IOException, InterruptedException {
         new Thread(new GroupIdThread(this)).start();
         while (true) {
@@ -48,7 +44,7 @@ public class RoomInformation {
                 return gid;
             }
 
-            Thread.sleep(1000); //分配时间给GroupId线程,避免while循环抢占时间
+            Thread.sleep(1000); //分配时间给GroupIdThread线程,避免while循环抢占时间
         }
     }
 
@@ -61,6 +57,7 @@ public class RoomInformation {
             String json = URLDecoder.decode(matcher.group(1), "utf-8");
             ObjectMapper mapper = new ObjectMapper();
             List<ServerConfig> list = mapper.readValue(json, mapper.getTypeFactory().constructParametricType(ArrayList.class, ServerConfig.class));
+
             return list.get(0);
         }
         return null;

@@ -28,10 +28,6 @@ public class BarrageThread implements Runnable {
      * 因为暂时取不到gid,所以手动传入gid.
      */
     public BarrageThread() throws IOException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("start to connect to server.");
-        }
-
         socket = new Socket(Config.getAddress(), Integer.parseInt(Config.getPort()));
         inputStream = socket.getInputStream();
         outputStream = socket.getOutputStream();
@@ -48,7 +44,6 @@ public class BarrageThread implements Runnable {
                 new Thread(new KeepLiveThread(socket)).start();
 
                 System.out.println("开始接受弹幕");
-
                 receive(inputStream);
             }
         } catch (IOException e) {

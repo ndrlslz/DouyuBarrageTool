@@ -1,7 +1,6 @@
 package domain;
 
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.annotate.JsonRootName;
 
 import java.io.Serializable;
 
