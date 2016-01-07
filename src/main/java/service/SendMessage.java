@@ -5,6 +5,7 @@ import domain.Message;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.UUID;
 
 /**
  * createdTime 2015/12/22
@@ -14,11 +15,11 @@ import java.io.OutputStream;
 public class SendMessage {
     private OutputStream outputStream;
     private ByteArrayOutputStream byteArrayOutputStream;
-    private String groupId;
+    private RoomInformation roomInformation;
 
-    public SendMessage(OutputStream outputStream, String groupId) {
+    public SendMessage(OutputStream outputStream) {
         this.outputStream = outputStream;
-        this.groupId = groupId;
+        this.roomInformation = new RoomInformation();
         byteArrayOutputStream = new ByteArrayOutputStream(1000);
     }
 
@@ -34,18 +35,33 @@ public class SendMessage {
         byteArrayOutputStream.reset();
     }
 
-    public void send() throws IOException {
-        String roomId = Config.getRoomId();
+    public void send() throws IOException, InterruptedException {
 
-        if (!roomId.matches("[0-9]+")) {
-            roomId = RoomInformation.getRoomIdByNickname(roomId);
-        }
+        String roomId = roomInformation.getRoomId();
+        System.out.println("进入房间:" + roomId);
+        String groupId = roomInformation.getGroupId();
+        System.out.println("加入group:" + groupId);
         sendMessage("type@=loginreq/username@=auto_KRLJbE8mZM/password@=1234567890123456/roomid@=" + roomId + "/");
         sendMessage("type@=joingroup/rid@=" + roomId + "/gid@=" + groupId + "/");
 
         if (byteArrayOutputStream != null) {
             byteArrayOutputStream.close();
         }
+    }
+
+    /**
+     * 获得groupId的请求
+     */
+    public void sendReq() throws IOException {
+        String roomId = roomInformation.getRoomId();
+        String devid = UUID.randomUUID().toString().replace("-", "").toUpperCase();
+        String rt = String.valueOf(System.currentTimeMillis() / 1000);
+        String ver = "20150526";
+        String magic = "7oE9nPEG9xXV69phU31FYCLUagKeYtsF";
+        String vk = MD5Utils.MD5(rt + magic + devid);
+
+        sendMessage("type@=loginreq/username@=/ct@=2/password@=/roomid@=" + roomId +
+                "/devid@=" + devid + "/rt@=" + rt + "/vk@=" + vk + "/ver@=" + ver + "/");
     }
 
     public void sendKeepLive() throws IOException {

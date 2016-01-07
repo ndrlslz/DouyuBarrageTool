@@ -23,12 +23,11 @@ public class BarrageThread implements Runnable {
     private InputStream inputStream;
     private OutputStream outputStream;
     private boolean close;
-    private String groupId;
 
     /**
      * 因为暂时取不到gid,所以手动传入gid.
      */
-    public BarrageThread(String groupId) throws IOException {
+    public BarrageThread() throws IOException {
         if (logger.isDebugEnabled()) {
             logger.debug("start to connect to server.");
         }
@@ -37,28 +36,24 @@ public class BarrageThread implements Runnable {
         inputStream = socket.getInputStream();
         outputStream = socket.getOutputStream();
         close = false;
-        this.groupId = groupId;
 
     }
 
     @Override
     public void run() {
-        SendMessage sendMessage = new SendMessage(outputStream, groupId);
+        SendMessage sendMessage = new SendMessage(outputStream);
         try {
             while (!close) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("start to send message to server.");
-                }
-
                 sendMessage.send();
                 new Thread(new KeepLiveThread(socket)).start();
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("start to receive message from server.");
-                }
+                System.out.println("开始接受弹幕");
+
                 receive(inputStream);
             }
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
             closeConnection();
@@ -83,7 +78,6 @@ public class BarrageThread implements Runnable {
         Matcher matcher = pattern.matcher(response);
 
         if (matcher.find()) {
-            System.out.println((matcher.group(2) + ": " + matcher.group(1)));
             logger.info(matcher.group(2) + ": " + matcher.group(1));
         }
     }

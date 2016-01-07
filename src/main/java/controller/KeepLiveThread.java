@@ -22,7 +22,7 @@ public class KeepLiveThread implements Runnable {
     public void run() {
         while (socket != null && socket.isConnected()) {
             try {
-                SendMessage sendMessage = new SendMessage(socket.getOutputStream(), null);
+                SendMessage sendMessage = new SendMessage(socket.getOutputStream());
                 sendMessage.sendKeepLive();
                 Thread.sleep(60000);
             } catch (IOException e) {
