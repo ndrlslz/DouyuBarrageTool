@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 /**
  * createdTime 2015/12/22
@@ -35,7 +36,7 @@ public class SendMessage {
         byteArrayOutputStream.reset();
     }
 
-    public void send() throws IOException, InterruptedException {
+    public void send() throws IOException, InterruptedException, ExecutionException {
 
         String roomId = roomInformation.getRoomId();
         System.out.println("进入房间:" + roomId);

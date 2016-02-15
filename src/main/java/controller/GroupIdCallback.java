@@ -1,5 +1,6 @@
 package controller;
 
+
 import service.RoomInformation;
 import service.SendMessage;
 
@@ -7,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,26 +20,40 @@ import java.util.regex.Pattern;
  *
  * @author ndrlslz
  */
-public class GroupIdThread implements Runnable {
+public class GroupIdCallback implements Callable<String> {
     private Socket socket;
     private InputStream inputStream;
     private OutputStream outputStream;
-    private RoomInformation roomInformation;
 
-    public GroupIdThread(RoomInformation roomInformation) throws IOException {
+    public GroupIdCallback(RoomInformation roomInformation) throws IOException {
         socket = new Socket(roomInformation.getServerConfig().getIp(), Integer.parseInt(roomInformation.getServerConfig().getPort()));
         inputStream = socket.getInputStream();
         outputStream = socket.getOutputStream();
-        this.roomInformation = roomInformation;
+
+    }
+
+    public String receive(InputStream inputStream) throws IOException {
+        int i;
+        byte[] bytes = new byte[1024];
+        while (socket != null && socket.isConnected() && (i = inputStream.read(bytes)) != -1) {
+            String REGEX = "type@=setmsggroup/.*?/gid@=(.*?)/";
+            Pattern pattern = Pattern.compile(REGEX);
+            Matcher matcher = pattern.matcher(new String(bytes, 0, i));
+
+            if (matcher.find()) {
+                return matcher.group(1);
+            }
+        }
+        return null;
     }
 
     @Override
-    public void run() {
+    public String call() throws Exception {
         SendMessage sendMessage = new SendMessage(outputStream);
         try {
             sendMessage.sendReq();
 
-            receive(inputStream);
+            return receive(inputStream);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -49,21 +65,8 @@ public class GroupIdThread implements Runnable {
                 e.printStackTrace();
             }
         }
+        return null;
     }
 
-    public void receive(InputStream inputStream) throws IOException {
-        int i;
-        byte[] bytes = new byte[1024];
-        while (socket != null && socket.isConnected() && (i = inputStream.read(bytes)) != -1) {
-            String REGEX = "type@=setmsggroup/.*?/gid@=(.*?)/";
-            Pattern pattern = Pattern.compile(REGEX);
-            Matcher matcher = pattern.matcher(new String(bytes, 0, i));
-
-            if (matcher.find()) {
-                roomInformation.setGid(matcher.group(1));
-                break;
-            }
-        }
-    }
 
 }

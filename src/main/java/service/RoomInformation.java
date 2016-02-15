@@ -1,6 +1,6 @@
 package service;
 
-import controller.GroupIdThread;
+import controller.GroupIdCallback;
 import domain.ServerConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.jsoup.Jsoup;
@@ -11,6 +11,10 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,30 +26,18 @@ import java.util.regex.Pattern;
 public class RoomInformation {
     private static HttpClient httpClient = new HttpClient();
     private String html;
-    private String gid;
-
-    public String getGid() {
-        return gid;
-    }
-
-    public void setGid(String gid) {
-        this.gid = gid;
-    }
 
     public RoomInformation() {
         html = httpClient.doGet(Config.getDouyu() + "/" + Config.getRoomId());
 
     }
 
-    public String getGroupId() throws IOException, InterruptedException {
-        new Thread(new GroupIdThread(this)).start();
-        while (true) {
-            if (getGid() != null) {
-                return gid;
-            }
-
-            Thread.sleep(1000); //分配时间给GroupIdThread线程,避免while循环抢占时间
-        }
+    public String getGroupId() throws IOException, InterruptedException, ExecutionException {
+        ExecutorService executors = Executors.newFixedThreadPool(1);
+        GroupIdCallback callback = new GroupIdCallback(this);
+        Future<String> gid =  executors.submit(callback);
+        executors.shutdown();
+        return gid.get();
     }
 
     public ServerConfig getServerConfig() throws IOException {
@@ -57,7 +49,6 @@ public class RoomInformation {
             String json = URLDecoder.decode(matcher.group(1), "utf-8");
             ObjectMapper mapper = new ObjectMapper();
             List<ServerConfig> list = mapper.readValue(json, mapper.getTypeFactory().constructParametricType(ArrayList.class, ServerConfig.class));
-
             return list.get(0);
         }
         return null;
