@@ -55,7 +55,7 @@ public class GroupIdThread implements Runnable {
         int i;
         byte[] bytes = new byte[1024];
         while (socket != null && socket.isConnected() && (i = inputStream.read(bytes)) != -1) {
-            String REGEX = "type@=setmsggroup/.*/gid@=(.*?)/";
+            String REGEX = "type@=setmsggroup/.*?/gid@=(.*?)/";
             Pattern pattern = Pattern.compile(REGEX);
             Matcher matcher = pattern.matcher(new String(bytes, 0, i));
 
