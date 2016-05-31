@@ -22,6 +22,10 @@ public class MessageHandle {
     private static final String GROUP_ID_REGEX = "type@=setmsggroup/.*?/gid@=(.*?)/";
     private static final String SERVER_CONFIG_REGEX = "server_config\":\"(.*?)\"";
     private static final String ROOM_ID_REGEX = "[0-9]+";
+    private static final String BARRAGE_REGEX = "type@=chatmsg/.*/nn@=(.*)/txt@=(.*?)/";
+    private static final Pattern BARRAGE_PATTERN = Pattern.compile(BARRAGE_REGEX);
+    private static final Pattern GROUP_ID_PATTERN = Pattern.compile(GROUP_ID_REGEX);
+    private static final Pattern SERVER_CONFIG_PATTERN = Pattern.compile(SERVER_CONFIG_REGEX);
 
     public static void handleBarrage() throws IOException {
         InputStream inputStream = DouYuClient.barrageSocket.getInputStream();
@@ -33,9 +37,7 @@ public class MessageHandle {
     }
 
     public static void parseBarrage(String response) {
-        String REGEX = "type@=chatmsg/.*/nn@=(.*)/txt@=(.*?)/";
-        Pattern pattern = Pattern.compile(REGEX);
-        Matcher matcher = pattern.matcher(response);
+        Matcher matcher = BARRAGE_PATTERN.matcher(response);
 
         if (matcher.find()) {
             logger.info(matcher.group(1) + ": " + matcher.group(2));
@@ -48,8 +50,7 @@ public class MessageHandle {
         int i;
         byte[] bytes = new byte[1024];
         while (socket.isConnected() && (i = inputStream.read(bytes)) != -1) {
-            Pattern pattern = Pattern.compile(GROUP_ID_REGEX);
-            Matcher matcher = pattern.matcher(new String(bytes, 0, i));
+            Matcher matcher = GROUP_ID_PATTERN.matcher(new String(bytes, 0, i));
 
             if (matcher.find()) {
                 socket.close();
@@ -60,8 +61,7 @@ public class MessageHandle {
     }
 
     public static ServerConfig parseServerConfig(String html) throws IOException {
-        Pattern pattern = Pattern.compile(SERVER_CONFIG_REGEX);
-        Matcher matcher = pattern.matcher(html);
+        Matcher matcher = SERVER_CONFIG_PATTERN.matcher(html);
 
         if (matcher.find()) {
             String json = URLDecoder.decode(matcher.group(1), "utf-8");
